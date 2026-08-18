@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#090625">
 <title>Учимся с Ларисой Коротаевой</title>
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="teacher.css">
 </head>
 <body>
 <main class="app">
@@ -94,6 +95,21 @@
   </div>
 </div>
 
+<div id="teacherModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="teacherTitle">
+  <div class="modal-card teacher-card">
+    <button id="closeTeacher" class="modal-close" aria-label="Закрыть">×</button>
+    <h2 id="teacherTitle">📘 Панель учителя</h2>
+    <p class="teacher-intro">Быстрый доступ к буквам и инструментам для занятия.</p>
+    <div class="teacher-actions">
+      <button id="randomLetterBtn" class="teacher-action"><span>🎲</span><b>Случайная буква</b><small>Открыть случайную карточку A–Z</small></button>
+      <button id="alphabetStartBtn" class="teacher-action"><span>🔤</span><b>Начать с A</b><small>Вернуться к первой группе A–F</small></button>
+      <button id="showProgressBtn" class="teacher-action"><span>🏆</span><b>Прогресс ученика</b><small>Посмотреть пройденные буквы</small></button>
+    </div>
+    <div class="teacher-note"><b>Сценарий занятия:</b> выбрать букву → посмотреть слова → выполнить Listen & Choose → Find the Letter → Match It! → получить награду.</div>
+  </div>
+</div>
+
 <script src="script.js"></script>
+<script src="teacher.js"></script>
 </body>
 </html>
