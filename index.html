@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090625">
+<title>Учимся с Ларисой Коротаевой</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="app">
+  <section class="selector-screen" id="selectorScreen">
+    <div class="selector-stage">
+      <img id="selectorImage" alt="Выбор букв английского алфавита">
+      <div id="letterHotspots"></div>
+      <button class="screen-arrow left" id="prevSelector" aria-label="Предыдущие буквы">←</button>
+      <button class="screen-arrow right" id="nextSelector" aria-label="Следующие буквы">→</button>
+      <div class="selector-indicator" id="selectorIndicator">A–F · 1 / 4</div>
+    </div>
+  </section>
+
+  <section class="letter-screen hidden" id="letterScreen">
+    <button class="back-button" id="backToSelector">← К выбору букв</button>
+    <div class="letter-hero" id="letterHero">
+      <div class="letter-badge" id="letterBadge">A</div>
+      <div class="hero-copy">
+        <p class="eyebrow" id="letterEyebrow">LETTER A</p>
+        <h1 id="letterTitle">Apple Adventure</h1>
+        <p id="letterIntro">Изучаем букву через слова, картинки и игру.</p>
+        <div class="word-preview" id="wordPreview"></div>
+        <button class="play-button" id="startGame">ИГРАТЬ ▶</button>
+      </div>
+      <div class="hero-emoji" id="heroEmoji">🍎</div>
+    </div>
+
+    <div class="game-panel hidden" id="gamePanel">
+      <div class="game-header">
+        <div><small id="gameLetterLabel"></small><h2 id="gameTitle"></h2></div>
+        <div class="score">⭐ <span id="stars">0</span></div>
+      </div>
+      <div class="steps">
+        <button class="step active" data-step="1">1. Listen & Choose</button>
+        <button class="step" data-step="2">2. Find the Letter</button>
+        <button class="step" data-step="3">3. Match It!</button>
+      </div>
+      <div class="challenge" id="challenge"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </section>
+</main>
+<script src="script.js"></script>
+</body>
+</html>
