@@ -1,0 +1,1 @@
+Illustrated selector assets are managed by the site build.
