@@ -7,10 +7,18 @@
 <title>Учимся с Ларисой Коротаевой</title>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="teacher.css">
+<link rel="stylesheet" href="mockup.css">
 </head>
 <body>
 <main class="app">
   <section id="selectorScreen" class="selector-screen">
+    <div id="mockupStage" class="mockup-stage hidden" aria-label="Витрина букв A–F">
+      <img id="mockupImage" src="assets/selector-AF.webp" alt="Учимся с Ларисой Коротаевой — выбор букв A–F">
+      <div id="mockupHotspots"></div>
+      <button id="mockPrev" class="mock-arrow mock-left" aria-label="Предыдущая группа букв">←</button>
+      <button id="mockNext" class="mock-arrow mock-right" aria-label="Следующая группа букв">→</button>
+    </div>
+
     <div class="topbar">
       <div class="brand">📖✨ <span>Учимся с <b>Ларисой Коротаевой</b></span></div>
       <nav>
@@ -111,5 +119,6 @@
 
 <script src="script.js"></script>
 <script src="teacher.js"></script>
+<script src="mockup.js"></script>
 </body>
 </html>
