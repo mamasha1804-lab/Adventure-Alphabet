@@ -27,7 +27,8 @@ let renderToken=0;
 
 async function imageFor(key){
  if(imageCache[key]) return imageCache[key];
- const parts=await Promise.all([0,1,2].map(i=>fetch(`assets/b64v2/${key}.${String(i).padStart(2,'0')}`,{cache:'force-cache'}).then(r=>{
+ if(key==='AF') return imageCache[key]='assets/selector-AF.webp?v=20260819-hq1';
+ const parts=await Promise.all([0,1,2].map(i=>fetch(`assets/b64v2/${key}.${String(i).padStart(2,'0')}?v=20260819`,{cache:'force-cache'}).then(r=>{
    if(!r.ok) throw new Error(`Не загружен ${key}.${i}`);
    return r.text();
  })));
@@ -46,10 +47,8 @@ function addHotspot(action,x,y,w,h,label,extra=''){
 function drawHotspots(def){
  hotspots.innerHTML='';
  def.letters.forEach(([l,x,y,w,h])=>addHotspot(()=>openLetter(l),x,y,w,h,`Открыть букву ${l}`,'letter-hit'));
- // Нижние кнопки макета.
  addHotspot(()=>document.getElementById('teacherBtn')?.click(),.018,.905,.185,.075,'Для учителей','utility-hit');
  addHotspot(()=>document.getElementById('achievementsBtn')?.click(),.790,.905,.190,.075,'Достижения','utility-hit');
- // Верхнее меню на самом изображении.
  addHotspot(()=>{},.375,.035,.095,.060,'Главная','menu-hit');
  addHotspot(()=>{},.485,.035,.075,.060,'Игры','menu-hit');
  addHotspot(()=>document.getElementById('aboutSection')?.scrollIntoView({behavior:'smooth'}),.565,.035,.095,.060,'Обо мне','menu-hit');
@@ -79,14 +78,11 @@ async function renderExactSelector(){
 }
 
 renderSelector=function(){renderExactSelector()};
-
 document.getElementById('mockPrev').onclick=()=>{page=(page+3)%4;renderSelector()};
 document.getElementById('mockNext').onclick=()=>{page=(page+1)%4;renderSelector()};
-// Старые стрелки остаются синхронизированы, даже если скрыты визуальным макетом.
 document.getElementById('prevSelector').onclick=()=>{page=(page+3)%4;renderSelector()};
 document.getElementById('nextSelector').onclick=()=>{page=(page+1)%4;renderSelector()};
 
-// Возврат из игры всегда показывает ту группу, где находится текущая буква.
 const oldBack=document.getElementById('backToSelector').onclick;
 document.getElementById('backToSelector').onclick=()=>{
  if(typeof currentLetter==='string'){
