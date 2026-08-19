@@ -10,11 +10,15 @@ const PAGES=[
  {key:'TZ',label:'T–Z',letters:[['T',.120,.395,.175,.245],['U',.300,.395,.175,.245],['V',.480,.395,.175,.245],['W',.660,.395,.175,.245],['X',.120,.655,.185,.225],['Y',.305,.655,.185,.225],['Z',.495,.655,.185,.225]]}
 ];
 const cache={};let renderToken=0;
-async function readParts(dir,key,count){const parts=await Promise.all(Array.from({length:count},(_,i)=>fetch(`assets/${dir}/${key}.${String(i).padStart(2,'0')}?v=20260820`,{cache:'force-cache'}).then(r=>{if(!r.ok)throw new Error(`${key}.${i}`);return r.text()})));return parts.join('').replace(/\s+/g,'')}
-async function imageFor(key){if(cache[key])return cache[key];if(key==='AF')return cache[key]='data:image/avif;base64,'+await readParts('hq40','AF',4);if(key==='GM')return cache[key]='data:image/avif;base64,'+await readParts('hq40','GM',3);return cache[key]='data:image/webp;base64,'+await readParts('b64v2',key,3)}
+function imageFor(key){
+ if(cache[key])return cache[key];
+ const src=`assets/selector-${key}.webp?v=20260820-source-hq`;
+ cache[key]=src;
+ return src;
+}
 function addHotspot(action,x,y,w,h,label,extra=''){const b=document.createElement('button');b.className='mock-hotspot '+extra;b.setAttribute('aria-label',label);Object.assign(b.style,{left:x*100+'%',top:y*100+'%',width:w*100+'%',height:h*100+'%'});b.onclick=action;hotspots.appendChild(b)}
 function drawHotspots(def){hotspots.innerHTML='';def.letters.forEach(([l,x,y,w,h])=>addHotspot(()=>openLetter(l),x,y,w,h,`Открыть букву ${l}`,'letter-hit'));addHotspot(()=>document.getElementById('teacherBtn')?.click(),.018,.905,.185,.075,'Для учителей','utility-hit');addHotspot(()=>document.getElementById('achievementsBtn')?.click(),.790,.905,.190,.075,'Достижения','utility-hit')}
-async function renderExactSelector(){const token=++renderToken,def=PAGES[page]||PAGES[0];selectorScreen.classList.add('mockup-mode');stage.classList.remove('hidden');stage.classList.add('is-loading');img.style.opacity='0';img.alt=`Учимся с Ларисой Коротаевой — выбор букв ${def.label}`;drawHotspots(def);try{const src=await imageFor(def.key);if(token!==renderToken)return;img.onload=()=>{stage.classList.remove('is-loading');img.style.opacity='1'};img.onerror=()=>{stage.classList.remove('is-loading');console.error('Selector image failed',def.key)};img.src=src;if(img.complete&&img.naturalWidth){stage.classList.remove('is-loading');img.style.opacity='1'}}catch(e){console.error(e);stage.classList.remove('is-loading')}}
+function renderExactSelector(){const token=++renderToken,def=PAGES[page]||PAGES[0];selectorScreen.classList.add('mockup-mode');stage.classList.remove('hidden');stage.classList.add('is-loading');img.style.opacity='0';img.alt=`Учимся с Ларисой Коротаевой — выбор букв ${def.label}`;drawHotspots(def);const src=imageFor(def.key);if(token!==renderToken)return;img.onload=()=>{stage.classList.remove('is-loading');img.style.opacity='1'};img.onerror=()=>{stage.classList.remove('is-loading');console.error('Selector image failed',def.key)};img.src=src;if(img.complete&&img.naturalWidth){stage.classList.remove('is-loading');img.style.opacity='1'}}
 renderSelector=renderExactSelector;
 for(const [id,delta] of [['mockPrev',3],['mockNext',1],['prevSelector',3],['nextSelector',1]]){const el=document.getElementById(id);if(el)el.onclick=()=>{page=(page+delta)%4;renderSelector()}}
 const back=document.getElementById('backToSelector'),oldBack=back?.onclick;if(back)back.onclick=()=>{if(typeof currentLetter==='string'){const idx=GROUPS.findIndex(g=>g.includes(currentLetter));if(idx>=0)page=idx}if(oldBack)oldBack();requestAnimationFrame(renderSelector)};
