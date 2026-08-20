@@ -1,0 +1,1 @@
+HQ selector images are being replaced with 1536x1024 sources.
