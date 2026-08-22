@@ -1,0 +1,15 @@
+ut.push(document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`))}return out}
+function pickCell(d){if(!startCell){startCell=d;d.classList.add('active');return}let cells=cellsBetween(startCell,d);startCell.classList.remove('active');if(!cells.length){startCell=null;toast('Выбирай по прямой линии',false);return}let s=cells.map(x=>x.textContent).join('').toLowerCase(),sr=[...s].reverse().join(''),word=searchWords.find(w=>w===s||w===sr);if(word&&!foundWS.has(word)){foundWS.add(word);cells.forEach(x=>x.classList.add('found'));document.querySelector(`.wcheck[data-word="${word}"]`).classList.add('on');speak(word);if(foundWS.size===searchWords.length)setStatus('s5','Все слова найдены!')}else if(!word)toast('Это не слово из списка',false);startCell=null}
+
+// task6
+const spyWords=['ink','jug','kangaroo','lamp','mouse','nest','orange','pin','queen'];
+const hits={nest:[3,3,28,18],queen:[20,18,48,60],mouse:[8,57,18,75],kangaroo:[13,58,36,94],jug:[55,30,71,47],orange:[68,35,83,49],lamp:[82,25,99,49],ink:[59,60,72,75],pin:[72,59,84,72]};
+let foundSpy=new Set();
+function renderSpy(){let sc=document.getElementById('scene'),sl=document.getElementById('spyList');sc.querySelectorAll('.hit').forEach(x=>x.remove());sl.innerHTML='';spyWords.forEach(w=>{let [l,t,r,b]=hits[w],h=document.createElement('button');h.className='hit';h.dataset.word=w;Object.assign(h.style,{left:l+'%',top:t+'%',width:(r-l)+'%',height:(b-t)+'%'});h.onclick=()=>findSpy(w,h);sc.appendChild(h);let d=document.createElement('div');d.className='spyItem';d.dataset.word=w;d.innerHTML=`<span class="spyBox"></span>${w}`;sl.appendChild(d)})}
+function findSpy(w,h){if(foundSpy.has(w))return;foundSpy.add(w);h.classList.add('found');document.querySelector(`.spyItem[data-word="${w}"]`).classList.add('on');speak(w);if(foundSpy.size===9)setStatus('s6','Все предметы найдены!')}
+document.getElementById('speakBtn').onclick=()=>{let i=0;let id=setInterval(()=>{if(i>=WORDS.length){clearInterval(id);return}speak(WORDS[i++])},900)};
+document.getElementById('resetBtn').onclick=()=>{location.reload()};
+
+renderMatch();renderMissing();renderScr();renderTF();renderWS();renderSpy();
+</script>
+</body></html>
