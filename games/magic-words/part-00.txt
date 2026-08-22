@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Magic Words I–Q</title>
+<style>
+:root{
+ --purple:#6f35c6;--purple2:#9a6ee8;--ink:#322547;--paper:#fffdf8;--line:#e7d8f7;
+ --blue:#5aa9dd;--bluebg:#f3fbff;--green:#76ae4c;--greenbg:#f6fce9;--orange:#e9994f;--orangebg:#fff8ec;
+ --pink:#d76da5;--pinkbg:#fff5fa;--ok:#39a65b;--bad:#df5b6a;--muted:#776987;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#efe9fb;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--ink)}
+#shell{position:relative;width:100vw;height:100vh;overflow:hidden}
+#board{position:absolute;width:1536px;height:1024px;left:0;top:0;transform-origin:0 0;background:linear-gradient(180deg,#fffefb 0%,#fffdf8 100%);border:7px solid var(--purple);border-radius:30px;box-shadow:0 22px 55px rgba(74,39,118,.18);padding:16px 18px 18px;display:grid;grid-template-rows:90px 438px 438px;gap:12px;overflow:hidden}
+.header{position:relative;border-bottom:2px solid #eadff5;display:flex;align-items:center;justify-content:center}
+.title{font-size:58px;font-weight:1000;letter-spacing:.6px;line-height:1;white-space:nowrap;text-shadow:0 3px 0 #fff,0 4px 2px rgba(88,48,126,.15)}
+.title span:nth-child(1){color:#ee7e9d}.title span:nth-child(2){color:#ef9d4d}.title span:nth-child(3){color:#8fcf58}.title span:nth-child(4){color:#63b9db}.title span:nth-child(5){color:#8c68dd}
+.stars{position:absolute;inset:0;pointer-events:none;font-size:24px;color:#f5b73b}.stars .a{position:absolute;left:35px;top:12px}.stars .b{position:absolute;left:95px;top:48px;color:#aa77e4}.stars .c{position:absolute;right:35px;top:15px;color:#f1a645}.stars .d{position:absolute;right:95px;top:53px;color:#8fc9df}
+.vocab{position:absolute;right:18px;bottom:8px;font-size:15px;font-weight:900;color:#6d5787;letter-spacing:.2px}
+.row{display:grid;gap:12px;min-height:0}
+.toprow{grid-template-columns:560px 430px 1fr}.bottomrow{grid-template-columns:405px 480px 1fr}
+.panel{position:relative;border:3px solid var(--line);border-radius:23px;background:#fff;padding:12px 13px 11px;overflow:hidden;min-height:0}
+.panel.blue{border-color:#b9dcef;background:linear-gradient(180deg,#fbfeff,#f7fcff)}
+.panel.green{border-color:#b9d590;background:linear-gradient(180deg,#fdfff9,#f8fdec)}
+.panel.purple{border-color:#d2b9ef;background:linear-gradient(180deg,#fff,#fcf9ff)}
+.panel.orange{border-color:#f1c58f;background:linear-gradient(180deg,#fffefa,#fff9f0)}
+.panel.pink{border-color:#e7b9d1;background:linear-gradient(180deg,#fff,#fff9fc)}
+.panel h2{margin:0;display:flex;align-items:center;gap:9px;font-size:20px;line-height:1;color:#493068;white-space:nowrap}
+.badge{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:var(--purple);color:#fff;font-weight:1000;font-size:20px;flex:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
+.blue .badge{background:#4b9ccc}.green .badge{background:#75af47}.orange .badge{background:#e99b4a}.pink .badge{background:#d56b9f}
+.hint{font-size:12px;color:var(--muted);margin:5px 0 7px}.status{height:18px;margin-top:4px;text-align:center;font-size:12px;font-weight:900}.status.ok{color:var(--ok)}.status.bad{color:var(--bad)}
+button,input{font:inherit}
+
+/* TASK 1 */
+.matchArea{position:relative;height:349px;display:grid;grid-template-columns:215px 1fr;gap:34px;padding-top:2px}
+.groupLabel{font-size:11px;font-weight:900;color:#8a78a0;text-transform:uppercase;letter-spacing:1px;text-align:center;margin-bottom:4px}
+.wordGrid,.picGrid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:6px;height:330px;position:relative;z-index:2}
+.wordTile,.picTile{border:2px solid #dfcff1;border-radius:13px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;min-width:0;min-height:0;transition:.14s}
+.wordTile{font-size:14px;font-weight:1000;padding:3px;text-transform:lowercase}.wordTile[data-word="kangaroo"]{font-size:11px}
+.picTile{padding:3px}.picTile img{display:block;max-width:92%;max-height:92%;object-fit:contain;border-radius:9px}
+.wordTile.sel{outline:4px solid rgba(122,77,202,.22);transform:translateY(-1px)}
+.wordTile.done,.picTile.done{border-color:#8dcc97;background:#f2fff4}.wordTile.done:after,.picTile.done:after{content:'✓';position:absolute;color:#35a356;font-weight:1000;font-size:16px}
+.wordTile,.picTile{position:relative}.wordTile.done:after{right:4px;top:2px}.picTile.done:after{right:4px;top:2px}
+#matchSvg{position:absolute;left:0;top:24px;width:100%;height:325px;z-index:1;pointer-events:none;overflow:visible}
+
+/* TASK 2 */
+.missingGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px 10px;margin-top:5px}
+.mcard{height:106px;border-bottom:1px dashed #cddcae;display:grid;grid-template-columns:31px 60px 1fr;gap:6px;align-items:center;padding:5px 2px}
+.mnum{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:#78b44d;color:white;font-size:14px;font-weight:1000}.mcard img{width:58px;height:58px;object-fit:contain;border-radius:8px}.mword{font-size:23px;font-weight:1000;letter-spacing:.5px;white-space:nowrap;color:#2c2631}.letterInput{width:24px;height:30px;padding:0;border:0;border-bottom:2px solid #5f5664;background:transparent;text-align:center;font-size:23px;font-weight:1000;color:#3b2e46;outline:none}.letterInput.correct{color:#299d4e;border-color:#299d4e}.letterInput.wrong{color:#d94f62;border-color:#d94f62}
+
+/* TASK3 */
+.scrambleGrid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;margin-top:5px;height:348px}
+.scard{border:1.5px dashed #d7c4ed;border-radius:14px;background:rgba(255,255,255,.8);display:grid;grid-template-columns:62px 1fr;grid-template-rows:80px 42px 1fr;padding:7px;gap:4px 8px;position:relative}.scard img{width:60px;height:72px;object-fit:contain;grid-row:1/3}.schips{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap}.chip{min-width:38px;height:39px;border:2px solid #dcccf0;border-radius:10px;background:#fff7db;font-size:21px;font-weight:1000;cursor:pointer}.chip:nth-child(2n){background:#e8f6ff}.chip:nth-child(3n){background:#ffeaf2}.chip.used{opacity:.28;pointer-events:none}.build{grid-column:2;border-bottom:2px solid #756d79;min-height:37px;text-align:center;font-size:22px;font-weight:1000;letter-spacing:2px;display:flex;align-items:center;justify-content:center}.clear{position:absolute;right:7px;bottom:6px;border:0;background:#eee2fa;color:#65438b;border-radius:8px;padding:3px 7px;font-size:10px;font-weight:900;cursor:pointer}.scard.good{background:#f1fff2;border-color:#7dc58c}.scard.good:after{content:'✓';position:absolute;right:8px;top:7px;color:#35a356;font-size:19px;font-weight:1000}
+
+/* TASK4 */
+.tfList{display:grid;grid-template-rows:repeat(6,1fr);gap:3px;margin-top:5px;height:348px}.tfrow{display:grid;grid-template-columns:28px 51px 1fr 32px 32px;gap:6px;align-items:center;border-bottom:1px solid #eef1f4;padding:2px 1px}.tfrow img{width:48px;height:48px;object-fit:contain;border-radius:6px}.tfnum{font-size:13px;font-weight:1000}.tftext{font-size:16px;font-weight:900;line-height:1.18}.yn{width:29px;height:29px;border:2px solid #c7ced6;border-radius:8px;background:#fff;font-size:15px;font-weight:1000;cursor:pointer}.yn.selectedTrue{background:#e9f8eb;border-color:#79bf84;color:#2c8b47}.yn.selectedFalse{background:#fdebed;border-color:#dd8792;color:#bd3d4d}
+
+/* TASK5 */
+.wsWrap{height:348px;display:grid;grid-template-columns:330px 1fr;gap:10px;margin-top:4px}.ws{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);border:2px solid #9bcddd;border-radius:10px;overflow:hidden;background:#fff;user-select:none}.cell{display:grid;place-items:center;border-right:1px solid #e7edf0;border-bottom:1px solid #e7edf0;font-size:14px;font-weight:1000;cursor:pointer}.cell.active{background:#ffe9a9}.cell.found{background:#dff4d6;color:#23663a}.wordList{display:grid;grid-template-columns:1fr 1fr;align-content:start;gap:8px}.wcheck{font-size:15px;font-weight:900;border-radius:10px;padding:8px 10px;background:#f3f9fb;color:#52616b;display:flex;align-items:center;gap:10px;min-height:40px}.wcheck:before{content:'';width:18px;height:18px;border:2px solid #9aa8b2;border-radius:4px;background:#fff;display:grid;place-items:center;box-sizing:border-box;flex:none}.wcheck.on{background:#eaf7e6;color:#2d7242}.wcheck.on:before{content:'✓';color:#2e9b4f;font-size:14px;line-height:1;font-weight:1000}
+
+/* TASK6 */
+.ispyWrap{height:348px;display:grid;grid-template-columns:1fr 144px;gap:9px;margin-top:4px}.scene{position:relative;border:2px solid #d5bce9;border-radius:13px;overflow:hidden;background:#eee}.scene img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}.hit{position:absolute;border:0;background:transparent;cursor:pointer;border-radius:20px}.hit.found{box-shadow:0 0 0 3px rgba(62,161,83,.7) inset;background:rgba(255,255,255,.08)}.spyList{display:grid;grid-template-columns:1fr;align-content:start;gap:5px}.spyItem{font-size:13px;font-weight:900;padding:6px 7px;border-radius:8px;background:#faf6ff;display:flex;align-items:center;gap:6px}.spyBox{width:16px;height:16px;border:2px solid #9787a9;border-radius:4px;background:#fff;display:grid;place-items:center;color:#2e9c4f;font-size:13px;flex:none}.spyItem.on{background:#edf9ee;color:#2d7041}.spyItem.on .spyBox:after{content:'✓'}.actions{position:absolute;right:12px;top:9px;display:flex;gap:6px}.roundBtn{border:0;border-radius:10px;padding:5px 9px;color:#fff;font-size:11px;font-weight:900;cursor:pointer}.speakBtn{background:#65b646}.resetBtn{background:#7950ce}
+.toast{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);padding:7px 14px;border-radius:99px;background:rgba(91,57,133,.93);color:white;font-size:12px;font-weight:900;opacity:0;pointer-events:none;transition:.2s;z-index:20}.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="shell"><main id="board">
+<header class="header">
+ <div class="stars"><span class="a">★</span><span class="b">✦</span><span class="c">★</span><span class="d">✦</span></div>
+ <div class="title"><span>Magic</span> <span>Words</span> <span>I</span><span>–</span><span>Q</span></div>
+ <div class="vocab">ink · jug · kangaroo · lamp · mouse · nest · orange · pin · queen</div>
+</header>
+<div class="row toprow">
+ <section class="panel blue" id="task1"><h2><span class="badge">1</span>Соедини слово и картинку</h2><div class="hint">Нажми слово, затем подходящую картинку.</div><div class="matchArea"><svg id="matchSvg"></svg><div><div class="groupLabel">Слова</div><div class="wordGrid" id="wordGrid"></div></div><div><div class="groupLabel">Картинки</div><div class="picGrid" id="picGrid"></div></div></div><div class="status" id="s1"></div></section>
+ <section class="panel green" id="task2"><h2><span class="badge">2</span>Вставь пропущенные буквы</h2><div class="hint">Впиши буквы в пустые места.</div><div class="missingGrid" id="missingGrid"></div><div class="status" id="s2"></div></section>
+ <section class="panel purple" id="task3"><h2><span class="badge">3</span>Составь слова из букв</h2><div class="hint">Нажимай буквы в правильном порядке.</div><div class="scrambleGrid" id="scrambleGrid"></div><div class="status" id="s3"></div></section>
+</div>
+<div class="row bottomrow">
+ <section class="panel orange" id="task4"><h2><span class="badge">4</span>Правда или неправда?</h2><div class="hint">Выбери ✓ (правда) или ✕ (неправда).</div><div class="tfList" id="tfList"></div><div class="status" id="s4"></div></section>
+ <section class="panel blue" id="task5"><h2><span class="badge">5</span>Найди слова</h2><div class="hint">Нажми первую и последнюю букву слова по прямой линии.</div><div class="wsWrap"><div class="ws" id="ws"></div><div class="wordList" id="wordList"></div></div><div class="status" id="s5"></div></section>
+ <section class="panel pink" id="task6"><h2><span class="badge">6</span>I Spy Words</h2><div class="actions"><button class="roundBtn speakBtn" id="speakBtn">🔊 Слова</button><button class="roundBtn resetBtn" id="resetBtn">↻ Сброс</button></div><div class="hint">Найди предмет на картинке и нажми на него.</div><div class="ispyWrap"><div class="scene" id="scene"><img src="data:image/webp;base64,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
