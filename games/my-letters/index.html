@@ -1,1 +1,32 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Letters A–H</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#efe9fb}nav{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#fff;border-bottom:2px solid #7d4bd3;box-shadow:0 3px 12px rgba(70,40,120,.12)}nav a{text-decoration:none;font-weight:800;color:#583391;padding:8px 12px;border:2px solid #d8c4f4;border-radius:999px}nav a.next{background:#7342c8;color:#fff;border-color:#7342c8}iframe{display:block;width:100%;height:calc(100% - 52px);border:0;background:#efe9fb}#loading{position:fixed;inset:52px 0 0;display:grid;place-items:center;color:#654094;font-weight:800;font-size:20px;background:#efe9fb;z-index:2}</style></head><body><nav><a href="../index.html">🏠 Все игры</a><strong>My Letters A–H</strong><a class="next" href="../magic-words/index.html">Magic Words I–Q →</a></nav><div id="loading">Загрузка игры…</div><iframe id="game" title="My Letters A–H"></iframe><script>const parts=["part-00.txt","part-01.txt","part-02.txt","part-03.txt","part-04.txt","part-05.txt","part-06.txt"];Promise.all(parts.map(p=>fetch(p).then(r=>{if(!r.ok)throw new Error(p);return r.text()}))).then(a=>{const blob=new Blob([a.join('')],{type:'text/html'});document.getElementById('game').src=URL.createObjectURL(blob);document.getElementById('loading').remove()}).catch(e=>{document.getElementById('loading').textContent='Не удалось загрузить игру: '+e.message});</script></body></html>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Letters A–H</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#efe9fb}nav{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#fff;border-bottom:2px solid #7d4bd3;box-shadow:0 3px 12px rgba(70,40,120,.12)}nav a{text-decoration:none;font-weight:800;color:#583391;padding:8px 12px;border:2px solid #d8c4f4;border-radius:999px}nav a.next{background:#7342c8;color:#fff;border-color:#7342c8}iframe{display:block;width:100%;height:calc(100% - 52px);border:0;background:#efe9fb}#loading{position:fixed;inset:52px 0 0;display:grid;place-items:center;text-align:center;padding:24px;color:#654094;font-weight:800;font-size:20px;background:#efe9fb;z-index:2}</style></head><body><nav><a href="../index.html">🏠 Все игры</a><strong>My Letters A–H</strong><a class="next" href="../magic-words/index.html">Magic Words I–Q →</a></nav><div id="loading">Загрузка игры…</div><iframe id="game" title="My Letters A–H"></iframe><script>
+const V='20260823-final3';
+const parts=[
+ ['final/gz-00.txt'],['final/gz-01.txt'],['final/gz-02.txt'],
+ ['finalfix/g03a.txt'],['finalfix2/g03b1.txt'],['finalfix2/g03b2.txt'],
+ ['final/gz-04.txt'],['finalfix/g05a.txt'],['finalfix/g05b.txt'],['final/gz-06.txt'],
+ ['finalfix/g07a.txt'],['finalfix2/g07b1.txt'],['finalfix5/g07b2a1.b64',1],['finalfix4/g07b2a2.txt'],['finalfix3/g07b2b.txt'],
+ ['finalfix2/g08a1.txt'],['finalfix3/g08a2a.txt'],['finalfix4/g08a2b1.txt'],['finalfix5/g08a2b2.b64',1],['finalfix/g08b.txt'],
+ ['finalfix/g09a.txt'],['finalfix3/g09b1a.txt'],['finalfix3/g09b1b.txt'],['finalfix2/g09b2.txt'],
+ ['finalfix/g10a.txt'],['finalfix/g10b.txt'],['final/gz-11.txt']
+];
+const loading=document.getElementById('loading');
+function decodeTextBase64(s){return atob(s.replace(/\s+/g,''));}
+Promise.all(parts.map(async ([p,double])=>{
+ const r=await fetch(p+'?v='+V,{cache:'no-store'});
+ if(!r.ok) throw new Error(p+' ('+r.status+')');
+ let t=await r.text();
+ return double?decodeTextBase64(t):t;
+})).then(async chunks=>{
+ const b64=chunks.join('').replace(/\s+/g,'');
+ const binary=atob(b64);
+ const bytes=new Uint8Array(binary.length);
+ for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+ if(!('DecompressionStream' in window)) throw new Error('браузер не поддерживает распаковку gzip');
+ const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+ const html=await new Response(stream).text();
+ if(!html.includes('<!DOCTYPE html>')&&!html.includes('<!doctype html>')) throw new Error('игровой файл повреждён');
+ const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+ document.getElementById('game').src=URL.createObjectURL(blob);
+ loading.remove();
+}).catch(e=>{console.error(e);loading.textContent='Не удалось загрузить игру: '+e.message+'\nОбновите страницу Ctrl+F5.'});
+</script></body></html>
