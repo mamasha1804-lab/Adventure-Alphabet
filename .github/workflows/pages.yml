@@ -33,4 +33,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v5
 
-# Final HQ selectors deployment trigger: 2026-08-23.
+# Force redeploy A-F direct image: 2026-08-23 17:46 +03
