@@ -14,7 +14,7 @@ const PAGES=[
 
 function asset(path){return BASE+path.replace(/^\/+/, '');}
 function fallbackSrc(key){
- if(key==='AF') return asset('assets/selector-AF.avif?v=20260823-af-built-1');
+ if(key==='AF') return asset('assets/selector-AF.jpg?v=20260823-af-jpg-1');
  return asset(`assets/selector-${key}.webp?v=20260823-direct-2`);
 }
 function addHotspot(action,x,y,w,h,label,extra=''){
