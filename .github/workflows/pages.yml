@@ -33,4 +33,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v5
 
-# Pages source enabled; this commit triggers a fresh deployment.
+# Final HQ selectors deployment trigger: 2026-08-23.
