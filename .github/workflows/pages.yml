@@ -23,6 +23,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Rebuild A-F image from verified source chunks
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat assets/hq40/AF.00 assets/hq40/AF.01 assets/hq40/AF.02 assets/hq40/AF.03 \
+            | tr -d '\r\n\t ' \
+            | base64 --decode > assets/selector-AF.avif
+          test -s assets/selector-AF.avif
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('assets/selector-AF.avif')
+          b=p.read_bytes()
+          assert len(b) > 50000, len(b)
+          assert b[4:12] == b'ftypavif', b[:16]
+          print('A-F AVIF rebuilt:', len(b), 'bytes')
+          PY
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
@@ -32,5 +48,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
-
-# Force redeploy A-F direct image: 2026-08-23 17:46 +03
