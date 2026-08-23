@@ -23,7 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Rebuild A-F image from verified source chunks
+
+      - name: Rebuild A-F image as browser-safe JPEG
         shell: bash
         run: |
           set -euo pipefail
@@ -39,6 +40,17 @@ jobs:
           assert b[4:12] == b'ftypavif', b[:16]
           print('A-F AVIF rebuilt:', len(b), 'bytes')
           PY
+          ffmpeg -y -loglevel error -i assets/selector-AF.avif -q:v 2 assets/selector-AF.jpg
+          test -s assets/selector-AF.jpg
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('assets/selector-AF.jpg')
+          b=p.read_bytes()
+          assert len(b) > 100000, len(b)
+          assert b[:2] == b'\xff\xd8', b[:8]
+          print('A-F JPEG ready:', len(b), 'bytes')
+          PY
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
