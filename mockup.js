@@ -4,6 +4,7 @@ const hotspots=document.getElementById('mockupHotspots');
 const img=document.getElementById('mockupImage');
 if(!stage||!hotspots||!img)return;
 
+const BASE='/Adventure-Alphabet/';
 const PAGES=[
  {key:'AF',label:'A–F',letters:[['A',.14,.405,.225,.245],['B',.375,.405,.205,.245],['C',.59,.405,.21,.245],['D',.105,.655,.22,.235],['E',.335,.655,.195,.235],['F',.54,.655,.195,.235]]},
  {key:'GM',label:'G–M',letters:[['G',.112,.395,.185,.245],['H',.305,.395,.185,.245],['I',.497,.395,.175,.245],['J',.678,.395,.175,.245],['K',.112,.655,.215,.225],['L',.335,.655,.205,.225],['M',.545,.655,.195,.225]]},
@@ -20,11 +21,9 @@ const HQ={
 
 const cache={};
 let renderToken=0;
-let activeObjectUrl=null;
 
-function fallbackSrc(key){
- return `assets/selector-${key}.webp?v=20260823-visible-fallback`;
-}
+function asset(path){return BASE+path.replace(/^\/+/, '');}
+function fallbackSrc(key){return asset(`assets/selector-${key}.webp?v=20260823-af-direct-1`);}
 
 async function assembledBlobSource(key){
  if(cache[key])return cache[key];
@@ -32,7 +31,7 @@ async function assembledBlobSource(key){
  if(!spec)throw new Error('No HQ source');
  const chunks=[];
  for(const part of spec.parts){
-  const response=await fetch(`${spec.dir}/${part}?v=20260823-blob-hq`,{cache:'no-store'});
+  const response=await fetch(asset(`${spec.dir}/${part}?v=20260823-af-direct-1`),{cache:'no-store'});
   if(!response.ok)throw new Error(`${part}: ${response.status}`);
   chunks.push(await response.text());
  }
@@ -54,7 +53,6 @@ function addHotspot(action,x,y,w,h,label,extra=''){
  b.onclick=action;
  hotspots.appendChild(b);
 }
-
 function drawHotspots(def){
  hotspots.innerHTML='';
  def.letters.forEach(([l,x,y,w,h])=>addHotspot(()=>openLetter(l),x,y,w,h,`Открыть букву ${l}`,'letter-hit'));
@@ -66,30 +64,30 @@ async function renderExactSelector(){
  const token=++renderToken;
  const def=PAGES[page]||PAGES[0];
  selectorScreen.classList.add('mockup-mode');
- stage.classList.remove('hidden','is-loading');
- img.alt=`Учимся с Ларисой Коротаевой — выбор букв ${def.label}`;
+ stage.classList.remove('hidden');
+ stage.classList.add('is-loading');
  drawHotspots(def);
-
- // Always show a visible image immediately. HQ replaces it when ready.
+ img.alt=`Учимся с Ларисой Коротаевой — выбор букв ${def.label}`;
  img.style.opacity='1';
- img.src=fallbackSrc(def.key);
+
+ const fallback=fallbackSrc(def.key);
+ img.onload=()=>stage.classList.remove('is-loading');
+ img.onerror=()=>{stage.classList.remove('is-loading'); console.error('Selector fallback failed',fallback);};
+ img.src=fallback;
 
  try{
-  const hqSrc=await assembledBlobSource(def.key);
+  const hq=await assembledBlobSource(def.key);
   if(token!==renderToken)return;
   const probe=new Image();
   probe.onload=()=>{
    if(token!==renderToken)return;
-   if(activeObjectUrl&&activeObjectUrl!==hqSrc&&!Object.values(cache).includes(activeObjectUrl))URL.revokeObjectURL(activeObjectUrl);
-   activeObjectUrl=hqSrc;
-   img.src=hqSrc;
-   img.style.opacity='1';
+   img.onload=()=>stage.classList.remove('is-loading');
+   img.onerror=()=>{img.src=fallback;};
+   img.src=hq;
   };
-  probe.onerror=()=>console.warn('HQ selector decode failed',def.key);
-  probe.src=hqSrc;
- }catch(e){
-  console.warn('HQ selector unavailable; keeping visible fallback',def.key,e);
- }
+  probe.onerror=()=>console.warn('HQ decode failed, fallback stays visible',def.key);
+  probe.src=hq;
+ }catch(e){console.warn('HQ unavailable, fallback stays visible',def.key,e);}
 }
 
 renderSelector=renderExactSelector;
