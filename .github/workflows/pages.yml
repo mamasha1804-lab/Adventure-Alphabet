@@ -24,14 +24,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify original selector PNGs
+      - name: Verify selector assets and JavaScript
         shell: bash
         run: |
           set -euo pipefail
-          test -s "assets/ChatGPT Image 18 авг. 2026 г., 21_58_21.png"
-          test -s "assets/ChatGPT Image 18 авг. 2026 г., 21_59_00.png"
-          test -s "assets/ChatGPT Image 18 авг. 2026 г., 21_59_32.png"
-          test -s "assets/ChatGPT Image 18 авг. 2026 г., 21_59_51.png"
+          files=(
+            "assets/ChatGPT Image 24 авг. 2026 г., 10_56_52.png"
+            "assets/ChatGPT Image 18 авг. 2026 г., 21_59_00.png"
+            "assets/ChatGPT Image 18 авг. 2026 г., 21_59_32.png"
+            "assets/ChatGPT Image 18 авг. 2026 г., 21_59_51.png"
+          )
+          for f in "${files[@]}"; do
+            test -s "$f"
+            bytes=$(stat -c%s "$f")
+            if [ "$bytes" -lt 1000000 ]; then
+              echo "Selector asset is unexpectedly small: $f ($bytes bytes)" >&2
+              exit 1
+            fi
+          done
+          node --check script.js
+          node --check teacher.js
+          node --check mockup.js
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -44,3 +57,97 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+      - name: Install browser test dependency
+        shell: bash
+        run: python -m pip install --quiet selenium
+
+      - name: Smoke test published site
+        shell: bash
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os, time
+          from selenium import webdriver
+          from selenium.webdriver.common.by import By
+          from selenium.webdriver.support.ui import WebDriverWait
+          from selenium.webdriver.support import expected_conditions as EC
+          from selenium.webdriver.chrome.options import Options
+
+          base = os.environ['SITE_URL'].rstrip('/') + '/?smoke=' + os.environ.get('GITHUB_SHA', '')
+          opts = Options()
+          opts.add_argument('--headless=new')
+          opts.add_argument('--no-sandbox')
+          opts.add_argument('--disable-dev-shm-usage')
+          opts.add_argument('--window-size=1536,1024')
+          opts.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
+          driver = webdriver.Chrome(options=opts)
+          wait = WebDriverWait(driver, 30)
+
+          groups = [
+              ('A–F', list('ABCDEF')),
+              ('G–M', list('GHIJKLM')),
+              ('N–S', list('NOPQRS')),
+              ('T–Z', list('TUVWXYZ')),
+          ]
+
+          try:
+              # CDN propagation can lag briefly after a successful deployment.
+              last_error = None
+              for attempt in range(8):
+                  try:
+                      driver.get(base + f'&attempt={attempt}')
+                      wait.until(EC.presence_of_element_located((By.ID, 'mockupImage')))
+                      src = driver.find_element(By.ID, 'mockupImage').get_attribute('src') or ''
+                      if '20260824-navfix' in src:
+                          break
+                      last_error = RuntimeError('old cached selector version: ' + src)
+                  except Exception as exc:
+                      last_error = exc
+                  time.sleep(5)
+              else:
+                  raise last_error or RuntimeError('published page did not become ready')
+
+              def wait_group(label):
+                  wait.until(lambda d: label in (d.find_element(By.ID, 'mockupImage').get_attribute('alt') or ''))
+                  img = driver.find_element(By.ID, 'mockupImage')
+                  wait.until(lambda d: d.execute_script('return arguments[0].complete && arguments[0].naturalWidth >= 1200 && arguments[0].naturalHeight >= 800', img))
+                  assert img.get_attribute('naturalWidth') or True
+                  ind = driver.find_element(By.ID, 'selectorIndicator').text
+                  assert label in ind, (label, ind)
+
+              # Verify all four selectors load at source-quality dimensions and arrows cycle correctly.
+              wait_group('A–F')
+              for label, _letters in groups[1:]:
+                  driver.find_element(By.ID, 'mockNext').click()
+                  wait_group(label)
+              driver.find_element(By.ID, 'mockNext').click()
+              wait_group('A–F')
+              driver.find_element(By.ID, 'mockPrev').click()
+              wait_group('T–Z')
+              driver.find_element(By.ID, 'mockNext').click()
+              wait_group('A–F')
+
+              # Verify every letter hotspot opens the matching letter screen and returns to its group.
+              for gi, (label, letters) in enumerate(groups):
+                  if gi:
+                      driver.find_element(By.ID, 'mockNext').click()
+                      wait_group(label)
+                  for letter in letters:
+                      button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, f'button[aria-label="Открыть букву {letter}"]')))
+                      driver.execute_script('arguments[0].click()', button)
+                      wait.until(lambda d: 'hidden' not in d.find_element(By.ID, 'letterScreen').get_attribute('class').split())
+                      badge = driver.find_element(By.ID, 'letterBadge').text.strip()
+                      assert badge == letter, (letter, badge)
+                      driver.find_element(By.ID, 'backToSelector').click()
+                      wait.until(lambda d: 'hidden' not in d.find_element(By.ID, 'selectorScreen').get_attribute('class').split())
+                      wait_group(label)
+
+              severe = [x for x in driver.get_log('browser') if x.get('level') == 'SEVERE']
+              assert not severe, severe
+              print('Published smoke test passed:', base)
+          finally:
+              driver.quit()
+          PY
