@@ -94,7 +94,6 @@ jobs:
           ]
 
           try:
-              # CDN propagation can lag briefly after a successful deployment.
               last_error = None
               for attempt in range(8):
                   try:
@@ -114,11 +113,11 @@ jobs:
                   wait.until(lambda d: label in (d.find_element(By.ID, 'mockupImage').get_attribute('alt') or ''))
                   img = driver.find_element(By.ID, 'mockupImage')
                   wait.until(lambda d: d.execute_script('return arguments[0].complete && arguments[0].naturalWidth >= 1200 && arguments[0].naturalHeight >= 800', img))
-                  assert img.get_attribute('naturalWidth') or True
-                  ind = driver.find_element(By.ID, 'selectorIndicator').text
+                  dims = driver.execute_script('return [arguments[0].naturalWidth, arguments[0].naturalHeight]', img)
+                  ind = driver.find_element(By.ID, 'selectorIndicator').get_attribute('textContent') or ''
                   assert label in ind, (label, ind)
+                  print('Loaded', label, dims, img.get_attribute('src'))
 
-              # Verify all four selectors load at source-quality dimensions and arrows cycle correctly.
               wait_group('A–F')
               for label, _letters in groups[1:]:
                   driver.find_element(By.ID, 'mockNext').click()
@@ -130,13 +129,12 @@ jobs:
               driver.find_element(By.ID, 'mockNext').click()
               wait_group('A–F')
 
-              # Verify every letter hotspot opens the matching letter screen and returns to its group.
               for gi, (label, letters) in enumerate(groups):
                   if gi:
                       driver.find_element(By.ID, 'mockNext').click()
                       wait_group(label)
                   for letter in letters:
-                      button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, f'button[aria-label="Открыть букву {letter}"]')))
+                      button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, f'button[aria-label="Открыть букву {letter}"]')))
                       driver.execute_script('arguments[0].click()', button)
                       wait.until(lambda d: 'hidden' not in d.find_element(By.ID, 'letterScreen').get_attribute('class').split())
                       badge = driver.find_element(By.ID, 'letterBadge').text.strip()
