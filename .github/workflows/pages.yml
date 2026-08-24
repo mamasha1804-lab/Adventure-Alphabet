@@ -24,39 +24,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Rebuild A-F image as browser-safe JPEG
+      - name: Verify original selector PNGs
         shell: bash
         run: |
           set -euo pipefail
-          cat assets/hq40/AF.00 assets/hq40/AF.01 assets/hq40/AF.02 assets/hq40/AF.03 \
-            | tr -d '\r\n\t ' \
-            | base64 --decode > assets/selector-AF.avif
-          test -s assets/selector-AF.avif
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('assets/selector-AF.avif')
-          b=p.read_bytes()
-          assert len(b) > 50000, len(b)
-          assert b[4:12] == b'ftypavif', b[:16]
-          print('A-F AVIF rebuilt:', len(b), 'bytes')
-          PY
-          ffmpeg -y -loglevel error -i assets/selector-AF.avif -q:v 2 assets/selector-AF.jpg
-          test -s assets/selector-AF.jpg
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('assets/selector-AF.jpg')
-          b=p.read_bytes()
-          assert len(b) > 100000, len(b)
-          assert b[:2] == b'\xff\xd8', b[:8]
-          print('A-F JPEG ready:', len(b), 'bytes')
-          PY
+          test -s "assets/ChatGPT Image 18 авг. 2026 г., 21_58_21.png"
+          test -s "assets/ChatGPT Image 18 авг. 2026 г., 21_59_00.png"
+          test -s "assets/ChatGPT Image 18 авг. 2026 г., 21_59_32.png"
+          test -s "assets/ChatGPT Image 18 авг. 2026 г., 21_59_51.png"
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
