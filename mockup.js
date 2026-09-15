@@ -20,6 +20,7 @@ function addHotspot(action,x,y,w,h,label,extra=''){const b=document.createElemen
 function drawHotspots(def){hotspots.innerHTML='';def.letters.forEach(([l,x,y,w,h])=>addHotspot(()=>openLetter(l),x,y,w,h,`Открыть букву ${l}`,'letter-hit'));addHotspot(()=>document.getElementById('teacherBtn')?.click(),.018,.905,.185,.075,'Для учителей','utility-hit');addHotspot(()=>document.getElementById('achievementsBtn')?.click(),.790,.905,.190,.075,'Достижения','utility-hit');}
 function renderExactSelector(){const def=PAGES[activeIndex];syncPage();selectorScreen.classList.add('mockup-mode');stage.classList.remove('hidden','is-loading');drawHotspots(def);img.alt=`Учимся с Ларисой Коротаевой — выбор букв ${def.label}`;img.style.opacity='1';img.src=assetFile(def.file);const indicator=document.getElementById('selectorIndicator');if(indicator)indicator.textContent=`${def.label} · ${activeIndex+1} / 4`;}
 function move(delta){activeIndex=(activeIndex+delta+PAGES.length)%PAGES.length;renderExactSelector();}
+window.showFirstLetterGroup=()=>{activeIndex=0;renderExactSelector();};
 try{renderSelector=renderExactSelector;}catch(e){}
 if(prevBtn){prevBtn.onclick=null;prevBtn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();move(-1);});}
 if(nextBtn){nextBtn.onclick=null;nextBtn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();move(1);});}
